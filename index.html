@@ -1,0 +1,1033 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Fluxo de Caixa</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 25px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.2em;
+            margin-bottom: 10px;
+        }
+        
+        .nav-tabs {
+            display: flex;
+            background: #ecf0f1;
+            border-bottom: 2px solid #bdc3c7;
+        }
+        
+        .tab-button {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .tab-button.active {
+            background: white;
+            color: #2c3e50;
+            border-bottom: 3px solid #3498db;
+        }
+        
+        .tab-content {
+            display: none;
+            padding: 25px;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .form-group label {
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .form-group input, .form-group select {
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+        
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s;
+            margin: 5px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #27ae60, #229954);
+            color: white;
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .table-container {
+            overflow-x: auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        th {
+            background: linear-gradient(135deg, #34495e, #2c3e50);
+            color: white;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+        }
+        
+        tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .status-pendente {
+            background: #ffeaa7;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .status-pago {
+            background: #55efc4;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .status-vencido {
+            background: #fd79a8;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            text-align: center;
+            transition: transform 0.3s;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .card h3 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        
+        .card .value {
+            font-size: 2em;
+            font-weight: bold;
+            margin: 15px 0;
+        }
+        
+        .value.positive {
+            color: #27ae60;
+        }
+        
+        .value.negative {
+            color: #e74c3c;
+        }
+        
+        .value.neutral {
+            color: #3498db;
+        }
+        
+        .btn-small {
+            padding: 5px 10px;
+            font-size: 12px;
+            margin: 2px;
+        }
+        
+        .filters {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        
+        .search-box {
+            flex: 1;
+            min-width: 200px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>💰 Sistema de Fluxo de Caixa</h1>
+            <p>Controle completo das suas finanças empresariais</p>
+        </div>
+        
+        <div class="nav-tabs">
+            <button class="tab-button active" onclick="showTab('dashboard')">📊 Dashboard</button>
+            <button class="tab-button" onclick="showTab('entradas')">💸 Entradas</button>
+            <button class="tab-button" onclick="showTab('saidas')">💳 Saídas</button>
+            <button class="tab-button" onclick="showTab('clientes')">👥 Clientes</button>
+            <button class="tab-button" onclick="showTab('relatorios')">📈 Relatórios</button>
+        </div>
+
+        <!-- DASHBOARD -->
+        <div id="dashboard" class="tab-content active">
+            <div class="dashboard" id="dashboardCards">
+                <!-- Cards serão inseridos dinamicamente -->
+            </div>
+            
+            <h3>Últimas Movimentações</h3>
+            <div class="table-container">
+                <table id="ultimasMovimentacoes">
+                    <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th>Tipo</th>
+                            <th>Descrição</th>
+                            <th>Cliente/Fornecedor</th>
+                            <th>Valor</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Movimentações serão inseridas dinamicamente -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ENTRADAS -->
+        <div id="entradas" class="tab-content">
+            <h2>Gerenciar Entradas</h2>
+            
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Data</label>
+                    <input type="date" id="dataEntrada" required>
+                </div>
+                <div class="form-group">
+                    <label>Cliente</label>
+                    <select id="clienteEntrada" required>
+                        <option value="">Selecione um cliente</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Descrição</label>
+                    <input type="text" id="descricaoEntrada" placeholder="Descrição da receita" required>
+                </div>
+                <div class="form-group">
+                    <label>Valor (R$)</label>
+                    <input type="number" id="valorEntrada" step="0.01" placeholder="0,00" required>
+                </div>
+                <div class="form-group">
+                    <label>Categoria</label>
+                    <select id="categoriaEntrada">
+                        <option value="vendas">Vendas</option>
+                        <option value="servicos">Serviços</option>
+                        <option value="juros">Juros</option>
+                        <option value="outros">Outros</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Status</label>
+                    <select id="statusEntrada">
+                        <option value="pendente">Pendente</option>
+                        <option value="pago">Pago</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div style="text-align: center;">
+                <button class="btn btn-success" onclick="adicionarEntrada()">➕ Adicionar Entrada</button>
+                <button class="btn btn-primary" onclick="exportarDados('entradas')">📥 Exportar</button>
+            </div>
+            
+            <div class="filters">
+                <div class="search-box">
+                    <input type="text" id="searchEntradas" placeholder="Buscar entradas..." onkeyup="filtrarTabela('tabelaEntradas', this.value)">
+                </div>
+                <select id="filtroStatusEntrada" onchange="filtrarPorStatus('entradas')">
+                    <option value="">Todos os Status</option>
+                    <option value="pendente">Pendente</option>
+                    <option value="pago">Pago</option>
+                </select>
+            </div>
+            
+            <div class="table-container">
+                <table id="tabelaEntradas">
+                    <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th>Cliente</th>
+                            <th>Descrição</th>
+                            <th>Categoria</th>
+                            <th>Valor</th>
+                            <th>Status</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Entradas serão inseridas dinamicamente -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- SAÍDAS -->
+        <div id="saidas" class="tab-content">
+            <h2>Gerenciar Saídas</h2>
+            
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Data</label>
+                    <input type="date" id="dataSaida" required>
+                </div>
+                <div class="form-group">
+                    <label>Fornecedor</label>
+                    <input type="text" id="fornecedorSaida" placeholder="Nome do fornecedor" required>
+                </div>
+                <div class="form-group">
+                    <label>Descrição</label>
+                    <input type="text" id="descricaoSaida" placeholder="Descrição da despesa" required>
+                </div>
+                <div class="form-group">
+                    <label>Valor (R$)</label>
+                    <input type="number" id="valorSaida" step="0.01" placeholder="0,00" required>
+                </div>
+                <div class="form-group">
+                    <label>Categoria</label>
+                    <select id="categoriaSaida">
+                        <option value="fornecedores">Fornecedores</option>
+                        <option value="salarios">Salários</option>
+                        <option value="aluguel">Aluguel</option>
+                        <option value="impostos">Impostos</option>
+                        <option value="marketing">Marketing</option>
+                        <option value="equipamentos">Equipamentos</option>
+                        <option value="outros">Outros</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Status</label>
+                    <select id="statusSaida">
+                        <option value="pendente">Pendente</option>
+                        <option value="pago">Pago</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div style="text-align: center;">
+                <button class="btn btn-danger" onclick="adicionarSaida()">➖ Adicionar Saída</button>
+                <button class="btn btn-primary" onclick="exportarDados('saidas')">📥 Exportar</button>
+            </div>
+            
+            <div class="filters">
+                <div class="search-box">
+                    <input type="text" id="searchSaidas" placeholder="Buscar saídas..." onkeyup="filtrarTabela('tabelaSaidas', this.value)">
+                </div>
+                <select id="filtroStatusSaida" onchange="filtrarPorStatus('saidas')">
+                    <option value="">Todos os Status</option>
+                    <option value="pendente">Pendente</option>
+                    <option value="pago">Pago</option>
+                </select>
+            </div>
+            
+            <div class="table-container">
+                <table id="tabelaSaidas">
+                    <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th>Fornecedor</th>
+                            <th>Descrição</th>
+                            <th>Categoria</th>
+                            <th>Valor</th>
+                            <th>Status</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Saídas serão inseridas dinamicamente -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- CLIENTES -->
+        <div id="clientes" class="tab-content">
+            <h2>Gerenciar Clientes</h2>
+            
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Nome do Cliente</label>
+                    <input type="text" id="nomeCliente" placeholder="Nome completo" required>
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="emailCliente" placeholder="email@exemplo.com">
+                </div>
+                <div class="form-group">
+                    <label>Telefone</label>
+                    <input type="tel" id="telefoneCliente" placeholder="(00) 00000-0000">
+                </div>
+                <div class="form-group">
+                    <label>Empresa</label>
+                    <input type="text" id="empresaCliente" placeholder="Nome da empresa">
+                </div>
+            </div>
+            
+            <div style="text-align: center;">
+                <button class="btn btn-success" onclick="adicionarCliente()">👥 Adicionar Cliente</button>
+            </div>
+            
+            <div class="table-container">
+                <table id="tabelaClientes">
+                    <thead>
+                        <tr>
+                            <th>Nome</th>
+                            <th>Email</th>
+                            <th>Telefone</th>
+                            <th>Empresa</th>
+                            <th>Total em Aberto</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Clientes serão inseridos dinamicamente -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- RELATÓRIOS -->
+        <div id="relatorios" class="tab-content">
+            <h2>Relatórios Financeiros</h2>
+            
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Data Inicial</label>
+                    <input type="date" id="dataInicial">
+                </div>
+                <div class="form-group">
+                    <label>Data Final</label>
+                    <input type="date" id="dataFinal">
+                </div>
+                <div class="form-group">
+                    <label>Tipo de Relatório</label>
+                    <select id="tipoRelatorio">
+                        <option value="geral">Relatório Geral</option>
+                        <option value="entradas">Apenas Entradas</option>
+                        <option value="saidas">Apenas Saídas</option>
+                        <option value="clientes">Por Cliente</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div style="text-align: center;">
+                <button class="btn btn-primary" onclick="gerarRelatorio()">📊 Gerar Relatório</button>
+                <button class="btn btn-success" onclick="exportarRelatorio()">📥 Exportar Relatório</button>
+            </div>
+            
+            <div id="relatorioResultado" style="margin-top: 30px;">
+                <!-- Resultado do relatório será inserido aqui -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Dados em memória
+        let entradas = [];
+        let saidas = [];
+        let clientes = [];
+        let nextId = 1;
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', function() {
+            carregarDadosExemplo();
+            atualizarDashboard();
+            atualizarSelectClientes();
+            atualizarTabelaEntradas();
+            atualizarTabelaSaidas();
+            atualizarTabelaClientes();
+            
+            // Definir data atual nos campos de data
+            const hoje = new Date().toISOString().split('T')[0];
+            document.getElementById('dataEntrada').value = hoje;
+            document.getElementById('dataSaida').value = hoje;
+        });
+
+        // Função para mostrar tabs
+        function showTab(tabName) {
+            // Esconder todos os conteúdos
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Remover active de todos os botões
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Mostrar tab selecionada
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+            
+            // Atualizar dashboard se necessário
+            if (tabName === 'dashboard') {
+                atualizarDashboard();
+            }
+        }
+
+        // Carregar dados de exemplo
+        function carregarDadosExemplo() {
+            clientes = [
+                {id: 1, nome: 'João Silva', email: 'joao@email.com', telefone: '(11) 99999-9999', empresa: 'Silva & Cia'},
+                {id: 2, nome: 'Maria Santos', email: 'maria@email.com', telefone: '(11) 88888-8888', empresa: 'Santos LTDA'},
+                {id: 3, nome: 'Pedro Oliveira', email: 'pedro@email.com', telefone: '(11) 77777-7777', empresa: 'Oliveira Corp'}
+            ];
+            
+            entradas = [
+                {id: 1, data: '2024-08-15', cliente: 'João Silva', descricao: 'Venda de produtos', categoria: 'vendas', valor: 5000, status: 'pago'},
+                {id: 2, data: '2024-08-20', cliente: 'Maria Santos', descricao: 'Prestação de serviços', categoria: 'servicos', valor: 3000, status: 'pendente'}
+            ];
+            
+            saidas = [
+                {id: 1, data: '2024-08-18', fornecedor: 'Fornecedor ABC', descricao: 'Compra de materiais', categoria: 'fornecedores', valor: 2000, status: 'pago'},
+                {id: 2, data: '2024-08-21', fornecedor: 'Energia Elétrica', descricao: 'Conta de luz', categoria: 'outros', valor: 500, status: 'pendente'}
+            ];
+            
+            nextId = 4;
+        }
+
+        // Atualizar Dashboard
+        function atualizarDashboard() {
+            const totalEntradas = entradas.reduce((sum, e) => sum + e.valor, 0);
+            const totalSaidas = saidas.reduce((sum, s) => sum + s.valor, 0);
+            const saldoAtual = totalEntradas - totalSaidas;
+            const contasPendentes = entradas.filter(e => e.status === 'pendente').reduce((sum, e) => sum + e.valor, 0);
+            
+            const dashboardCards = document.getElementById('dashboardCards');
+            dashboardCards.innerHTML = `
+                <div class="card">
+                    <h3>💰 Saldo Atual</h3>
+                    <div class="value ${saldoAtual >= 0 ? 'positive' : 'negative'}">
+                        R$ ${saldoAtual.toLocaleString('pt-BR', {minimumFractionDigits: 2})}
+                    </div>
+                </div>
+                <div class="card">
+                    <h3>📈 Total Entradas</h3>
+                    <div class="value positive">
+                        R$ ${totalEntradas.toLocaleString('pt-BR', {minimumFractionDigits: 2})}
+                    </div>
+                </div>
+                <div class="card">
+                    <h3>📉 Total Saídas</h3>
+                    <div class="value negative">
+                        R$ ${totalSaidas.toLocaleString('pt-BR', {minimumFractionDigits: 2})}
+                    </div>
+                </div>
+                <div class="card">
+                    <h3>⏳ Contas a Receber</h3>
+                    <div class="value neutral">
+                        R$ ${contasPendentes.toLocaleString('pt-BR', {minimumFractionDigits: 2})}
+                    </div>
+                </div>
+            `;
+            
+            // Atualizar últimas movimentações
+            const ultimasMovimentacoes = [...entradas.map(e => ({...e, tipo: 'Entrada'})), ...saidas.map(s => ({...s, tipo: 'Saída', cliente: s.fornecedor}))]
+                .sort((a, b) => new Date(b.data) - new Date(a.data))
+                .slice(0, 10);
+                
+            const tbody = document.querySelector('#ultimasMovimentacoes tbody');
+            tbody.innerHTML = ultimasMovimentacoes.map(mov => `
+                <tr>
+                    <td>${new Date(mov.data).toLocaleDateString('pt-BR')}</td>
+                    <td><span class="${mov.tipo === 'Entrada' ? 'status-pago' : 'status-vencido'}">${mov.tipo}</span></td>
+                    <td>${mov.descricao}</td>
+                    <td>${mov.cliente}</td>
+                    <td>R$ ${mov.valor.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>
+                    <td><span class="status-${mov.status}">${mov.status.charAt(0).toUpperCase() + mov.status.slice(1)}</span></td>
+                </tr>
+            `).join('');
+        }
+
+        // Atualizar select de clientes
+        function atualizarSelectClientes() {
+            const select = document.getElementById('clienteEntrada');
+            select.innerHTML = '<option value="">Selecione um cliente</option>' + 
+                clientes.map(c => `<option value="${c.nome}">${c.nome}</option>`).join('');
+        }
+
+        // Adicionar entrada
+        function adicionarEntrada() {
+            const data = document.getElementById('dataEntrada').value;
+            const cliente = document.getElementById('clienteEntrada').value;
+            const descricao = document.getElementById('descricaoEntrada').value;
+            const valor = parseFloat(document.getElementById('valorEntrada').value);
+            const categoria = document.getElementById('categoriaEntrada').value;
+            const status = document.getElementById('statusEntrada').value;
+            
+            if (!data || !cliente || !descricao || !valor) {
+                alert('Por favor, preencha todos os campos obrigatórios!');
+                return;
+            }
+            
+            entradas.push({
+                id: nextId++,
+                data,
+                cliente,
+                descricao,
+                categoria,
+                valor,
+                status
+            });
+            
+            // Limpar formulário
+            document.getElementById('dataEntrada').value = new Date().toISOString().split('T')[0];
+            document.getElementById('clienteEntrada').value = '';
+            document.getElementById('descricaoEntrada').value = '';
+            document.getElementById('valorEntrada').value = '';
+            document.getElementById('categoriaEntrada').value = 'vendas';
+            document.getElementById('statusEntrada').value = 'pendente';
+            
+            atualizarTabelaEntradas();
+            atualizarDashboard();
+            alert('Entrada adicionada com sucesso!');
+        }
+
+        // Adicionar saída
+        function adicionarSaida() {
+            const data = document.getElementById('dataSaida').value;
+            const fornecedor = document.getElementById('fornecedorSaida').value;
+            const descricao = document.getElementById('descricaoSaida').value;
+            const valor = parseFloat(document.getElementById('valorSaida').value);
+            const categoria = document.getElementById('categoriaSaida').value;
+            const status = document.getElementById('statusSaida').value;
+            
+            if (!data || !fornecedor || !descricao || !valor) {
+                alert('Por favor, preencha todos os campos obrigatórios!');
+                return;
+            }
+            
+            saidas.push({
+                id: nextId++,
+                data,
+                fornecedor,
+                descricao,
+                categoria,
+                valor,
+                status
+            });
+            
+            // Limpar formulário
+            document.getElementById('dataSaida').value = new Date().toISOString().split('T')[0];
+            document.getElementById('fornecedorSaida').value = '';
+            document.getElementById('descricaoSaida').value = '';
+            document.getElementById('valorSaida').value = '';
+            document.getElementById('categoriaSaida').value = 'fornecedores';
+            document.getElementById('statusSaida').value = 'pendente';
+            
+            atualizarTabelaSaidas();
+            atualizarDashboard();
+            alert('Saída adicionada com sucesso!');
+        }
+
+        // Adicionar cliente
+        function adicionarCliente() {
+            const nome = document.getElementById('nomeCliente').value;
+            const email = document.getElementById('emailCliente').value;
+            const telefone = document.getElementById('telefoneCliente').value;
+            const empresa = document.getElementById('empresaCliente').value;
+            
+            if (!nome) {
+                alert('Por favor, preencha o nome do cliente!');
+                return;
+            }
+            
+            clientes.push({
+                id: nextId++,
+                nome,
+                email,
+                telefone,
+                empresa
+            });
+            
+            // Limpar formulário
+            document.getElementById('nomeCliente').value = '';
+            document.getElementById('emailCliente').value = '';
+            document.getElementById('telefoneCliente').value = '';
+            document.getElementById('empresaCliente').value = '';
+            
+            atualizarTabelaClientes();
+            atualizarSelectClientes();
+            alert('Cliente adicionado com sucesso!');
+        }
+
+        // Atualizar tabela de entradas
+        function atualizarTabelaEntradas() {
+            const tbody = document.querySelector('#tabelaEntradas tbody');
+            tbody.innerHTML = entradas.map(e => `
+                <tr>
+                    <td>${new Date(e.data).toLocaleDateString('pt-BR')}</td>
+                    <td>${e.cliente}</td>
+                    <td>${e.descricao}</td>
+                    <td>${e.categoria}</td>
+                    <td>R$ ${e.valor.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>
+                    <td><span class="status-${e.status}">${e.status.charAt(0).toUpperCase() + e.status.slice(1)}</span></td>
+                    <td>
+                        <button class="btn btn-small btn-primary" onclick="editarStatus(${e.id}, 'entrada')">${e.status === 'pendente' ? 'Marcar Pago' : 'Marcar Pendente'}</button>
+                        <button class="btn btn-small btn-danger" onclick="excluirItem(${e.id}, 'entrada')">Excluir</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Atualizar tabela de saídas
+        function atualizarTabelaSaidas() {
+            const tbody = document.querySelector('#tabelaSaidas tbody');
+            tbody.innerHTML = saidas.map(s => `
+                <tr>
+                    <td>${new Date(s.data).toLocaleDateString('pt-BR')}</td>
+                    <td>${s.fornecedor}</td>
+                    <td>${s.descricao}</td>
+                    <td>${s.categoria}</td>
+                    <td>R$ ${s.valor.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>
+                    <td><span class="status-${s.status}">${s.status.charAt(0).toUpperCase() + s.status.slice(1)}</span></td>
+                    <td>
+                        <button class="btn btn-small btn-primary" onclick="editarStatus(${s.id}, 'saida')">${s.status === 'pendente' ? 'Marcar Pago' : 'Marcar Pendente'}</button>
+                        <button class="btn btn-small btn-danger" onclick="excluirItem(${s.id}, 'saida')">Excluir</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Atualizar tabela de clientes
+        function atualizarTabelaClientes() {
+            const tbody = document.querySelector('#tabelaClientes tbody');
+            tbody.innerHTML = clientes.map(c => {
+                const totalEmAberto = entradas.filter(e => e.cliente === c.nome && e.status === 'pendente')
+                    .reduce((sum, e) => sum + e.valor, 0);
+                
+                return `
+                    <tr>
+                        <td>${c.nome}</td>
+                        <td>${c.email}</td>
+                        <td>${c.telefone}</td>
+                        <td>${c.empresa}</td>
+                        <td>R$ ${totalEmAberto.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>
+                        <td>
+                            <button class="btn btn-small btn-danger" onclick="excluirItem(${c.id}, 'cliente')">Excluir</button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // Editar status
+        function editarStatus(id, tipo) {
+            if (tipo === 'entrada') {
+                const entrada = entradas.find(e => e.id === id);
+                entrada.status = entrada.status === 'pendente' ? 'pago' : 'pendente';
+                atualizarTabelaEntradas();
+            } else {
+                const saida = saidas.find(s => s.id === id);
+                saida.status = saida.status === 'pendente' ? 'pago' : 'pendente';
+                atualizarTabelaSaidas();
+            }
+            atualizarDashboard();
+        }
+
+        // Excluir item
+        function excluirItem(id, tipo) {
+            if (confirm('Tem certeza que deseja excluir este item?')) {
+                if (tipo === 'entrada') {
+                    entradas = entradas.filter(e => e.id !== id);
+                    atualizarTabelaEntradas();
+                } else if (tipo === 'saida') {
+                    saidas = saidas.filter(s => s.id !== id);
+                    atualizarTabelaSaidas();
+                } else if (tipo === 'cliente') {
+                    clientes = clientes.filter(c => c.id !== id);
+                    atualizarTabelaClientes();
+                    atualizarSelectClientes();
+                }
+                atualizarDashboard();
+            }
+        }
+
+        // Filtrar tabela
+        function filtrarTabela(tabelaId, termo) {
+            const tabela = document.getElementById(tabelaId);
+            const linhas = tabela.getElementsByTagName('tr');
+            
+            for (let i = 1; i < linhas.length; i++) {
+                const linha = linhas[i];
+                const texto = linha.textContent.toLowerCase();
+                linha.style.display = texto.includes(termo.toLowerCase()) ? '' : 'none';
+            }
+        }
+
+        // Filtrar por status
+        function filtrarPorStatus(tipo) {
+            const filtroStatus = document.getElementById(`filtroStatus${tipo.charAt(0).toUpperCase() + tipo.slice(1).replace('s', '')}`).value;
+            const tabela = document.getElementById(`tabela${tipo.charAt(0).toUpperCase() + tipo.slice(1)}`);
+            const linhas = tabela.getElementsByTagName('tr');
+            
+            for (let i = 1; i < linhas.length; i++) {
+                const linha = linhas[i];
+                const status = linha.cells[5].textContent.toLowerCase();
+                linha.style.display = !filtroStatus || status.includes(filtroStatus) ? '' : 'none';
+            }
+        }
+
+        // Exportar dados
+        function exportarDados(tipo) {
+            let dados;
+            let headers;
+            
+            if (tipo === 'entradas') {
+                dados = entradas;
+                headers = ['Data', 'Cliente', 'Descrição', 'Categoria', 'Valor', 'Status'];
+            } else if (tipo === 'saidas') {
+                dados = saidas;
+                headers = ['Data', 'Fornecedor', 'Descrição', 'Categoria', 'Valor', 'Status'];
+            }
+            
+            let csv = headers.join(',') + '\n';
+            dados.forEach(item => {
+                const linha = [
+                    item.data,
+                    tipo === 'entradas' ? item.cliente : item.fornecedor,
+                    item.descricao,
+                    item.categoria,
+                    item.valor,
+                    item.status
+                ].join(',');
+                csv += linha + '\n';
+            });
+            
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${tipo}_${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+        }
+
+        // Gerar relatório
+        function gerarRelatorio() {
+            const dataInicial = document.getElementById('dataInicial').value;
+            const dataFinal = document.getElementById('dataFinal').value;
+            const tipoRelatorio = document.getElementById('tipoRelatorio').value;
+            
+            if (!dataInicial || !dataFinal) {
+                alert('Por favor, selecione as datas inicial e final!');
+                return;
+            }
+            
+            let dadosFiltrados = [];
+            
+            if (tipoRelatorio === 'geral' || tipoRelatorio === 'entradas') {
+                const entradasFiltradas = entradas.filter(e => 
+                    e.data >= dataInicial && e.data <= dataFinal
+                );
+                dadosFiltrados = [...dadosFiltrados, ...entradasFiltradas.map(e => ({...e, tipo: 'Entrada'}))];
+            }
+            
+            if (tipoRelatorio === 'geral' || tipoRelatorio === 'saidas') {
+                const saidasFiltradas = saidas.filter(s => 
+                    s.data >= dataInicial && s.data <= dataFinal
+                );
+                dadosFiltrados = [...dadosFiltrados, ...saidasFiltradas.map(s => ({...s, tipo: 'Saída', cliente: s.fornecedor}))];
+            }
+            
+            const totalEntradas = dadosFiltrados.filter(d => d.tipo === 'Entrada').reduce((sum, d) => sum + d.valor, 0);
+            const totalSaidas = dadosFiltrados.filter(d => d.tipo === 'Saída').reduce((sum, d) => sum + d.valor, 0);
+            const saldo = totalEntradas - totalSaidas;
+            
+            const resultado = document.getElementById('relatorioResultado');
+            resultado.innerHTML = `
+                <div class="dashboard">
+                    <div class="card">
+                        <h3>📈 Total Entradas</h3>
+                        <div class="value positive">R$ ${totalEntradas.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div>
+                    </div>
+                    <div class="card">
+                        <h3>📉 Total Saídas</h3>
+                        <div class="value negative">R$ ${totalSaidas.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div>
+                    </div>
+                    <div class="card">
+                        <h3>💰 Saldo Período</h3>
+                        <div class="value ${saldo >= 0 ? 'positive' : 'negative'}">R$ ${saldo.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Data</th>
+                                <th>Tipo</th>
+                                <th>Descrição</th>
+                                <th>Cliente/Fornecedor</th>
+                                <th>Valor</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${dadosFiltrados.sort((a, b) => new Date(a.data) - new Date(b.data)).map(d => `
+                                <tr>
+                                    <td>${new Date(d.data).toLocaleDateString('pt-BR')}</td>
+                                    <td><span class="${d.tipo === 'Entrada' ? 'status-pago' : 'status-vencido'}">${d.tipo}</span></td>
+                                    <td>${d.descricao}</td>
+                                    <td>${d.cliente}</td>
+                                    <td>R$ ${d.valor.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>
+                                    <td><span class="status-${d.status}">${d.status.charAt(0).toUpperCase() + d.status.slice(1)}</span></td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+
+        // Exportar relatório
+        function exportarRelatorio() {
+            const dataInicial = document.getElementById('dataInicial').value;
+            const dataFinal = document.getElementById('dataFinal').value;
+            
+            if (!dataInicial || !dataFinal) {
+                alert('Gere um relatório primeiro!');
+                return;
+            }
+            
+            gerarRelatorio(); // Garantir que o relatório está atualizado
+            
+            // Criar CSV do relatório
+            const dadosFiltrados = [];
+            const entradasFiltradas = entradas.filter(e => e.data >= dataInicial && e.data <= dataFinal);
+            const saidasFiltradas = saidas.filter(s => s.data >= dataInicial && s.data <= dataFinal);
+            
+            dadosFiltrados.push(...entradasFiltradas.map(e => ({...e, tipo: 'Entrada', cliente: e.cliente})));
+            dadosFiltrados.push(...saidasFiltradas.map(s => ({...s, tipo: 'Saída', cliente: s.fornecedor})));
+            
+            let csv = 'Data,Tipo,Descrição,Cliente/Fornecedor,Valor,Status\n';
+            dadosFiltrados.forEach(item => {
+                const linha = [
+                    item.data,
+                    item.tipo,
+                    item.descricao,
+                    item.cliente,
+                    item.valor,
+                    item.status
+                ].join(',');
+                csv += linha + '\n';
+            });
+            
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `relatorio_${dataInicial}_${dataFinal}.csv`;
+            a.click();
+        }
+    </script>
+</body>
+</html>
